@@ -29,5 +29,15 @@ module serial_adder_with_vld
   //
   // When rst is high, the module should reset its internal state.
 
+    logic carry;
+    
+    assign sum = ~rst & vld & (a ^ b ^ carry);
+
+    always_ff @ (posedge clk)
+    if (rst | (last & vld))
+        carry <= '0;
+    else
+        if (vld)
+            carry <= (a & b) | ((a ^ b) & carry);
 
 endmodule
