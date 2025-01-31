@@ -43,7 +43,7 @@ module detect_4_bit_sequence_using_fsm
     endcase
 
     // verilator lint_on CASEINCOMPLETE
-
+  
   end
 
   // Output logic (depends only on the current state)
@@ -74,6 +74,50 @@ module detect_6_bit_sequence_using_fsm
   // Implement a module that detects the "110011" input sequence
   //
   // Hint: See Lecture 3 for details
+
+  enum logic[2:0]
+  {
+     IDLE = 3'b000,
+     S0   = 3'b001,
+     S1   = 3'b010,
+     S2   = 3'b011,
+     S3   = 3'b100,
+     S4   = 3'b101,
+     S5   = 3'b110
+  }
+  state, new_state;
+
+  // State transition logic
+  always_comb
+  begin
+    new_state = state;
+
+    // This lint warning is bogus because we assign the default value above
+    // verilator lint_off CASEINCOMPLETE
+
+    case (state)
+        IDLE: if (  a) new_state = S0;
+        S0:   if (  a) new_state = S1; else if (~ a) new_state = IDLE;
+        S1:   if (~ a) new_state = S2;
+        S2:   if (~ a) new_state = S3; else if (  a) new_state = S0;
+        S3:   if (  a) new_state = S4; else if (~ a) new_state = IDLE;
+        S4:   if (  a) new_state = S5; else if (~ a) new_state = IDLE;
+        S5:   if (  a) new_state = S1; else if (~ a) new_state = S2;
+    endcase
+
+    // verilator lint_on CASEINCOMPLETE
+  
+  end
+
+  // Output logic (depends only on the current state)
+  assign detected = (state == S5);
+
+  // State update
+  always_ff @ (posedge clk)
+    if (rst)
+      state <= IDLE;
+    else
+      state <= new_state;
 
 
 endmodule
